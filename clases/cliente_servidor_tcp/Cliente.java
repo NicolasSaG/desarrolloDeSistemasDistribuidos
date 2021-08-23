@@ -33,24 +33,25 @@ public class Cliente {
 			byte[] a = b.array();
 			out.write(a);
 
+			int numeros = 10000;
 			long inicio = System.currentTimeMillis();
 			// enviar 10k doubles
-			for (int i = 1; i <= 10000; i++) {
+			for (int i = 1; i <= numeros; i++) {
 				out.writeDouble((double) i);
 			}
 
 			long total = System.currentTimeMillis() - inicio;
-			System.out.println("tiempo en enviar 10k flotantes:" + total + " ms");
+			System.out.println("tiempo en enviar " + numeros + " flotantes:" + total + " ms");
 
-			b = ByteBuffer.allocate(8 * 10000);
-			for (int i = 1; i <= 10000; i++) {
+			b = ByteBuffer.allocate(8 * numeros);
+			for (int i = 1; i <= numeros; i++) {
 				b.putDouble((double) i);
 			}
 			a = b.array();
 			inicio = System.currentTimeMillis();
 			out.write(a);
 			total = System.currentTimeMillis() - inicio;
-			System.out.println("tiempo en enviar 10k flotantes:" + total + " ms");
+			System.out.println("tiempo en enviar " + numeros + " flotantes:" + total + " ms");
 
 			out.close();
 			in.close();
