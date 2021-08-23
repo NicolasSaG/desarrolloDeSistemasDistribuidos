@@ -1,3 +1,5 @@
+package cliente_servidor;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
@@ -24,33 +26,14 @@ public class Cliente {
 			// System.out.println(in.readUTF());
 
 			// enviar conjuntos de doubles eficientemente
-			ByteBuffer b = ByteBuffer.allocate(5 * 8);
-			b.putDouble(1.1);
-			b.putDouble(1.2);
-			b.putDouble(1.3);
-			b.putDouble(1.4);
-			b.putDouble(1.5);
-			byte[] a = b.array();
-			out.write(a);
-
-			long inicio = System.currentTimeMillis();
-			// enviar 10k doubles
-			for (int i = 1; i <= 10000; i++) {
-				out.writeDouble((double) i);
-			}
-
-			long total = System.currentTimeMillis() - inicio;
-			System.out.println("tiempo en enviar 10k flotantes:" + total + " ms");
-
-			b = ByteBuffer.allocate(8 * 10000);
-			for (int i = 1; i <= 10000; i++) {
-				b.putDouble((double) i);
-			}
-			a = b.array();
-			inicio = System.currentTimeMillis();
-			out.write(a);
-			total = System.currentTimeMillis() - inicio;
-			System.out.println("tiempo en enviar 10k flotantes:" + total + " ms");
+			// ByteBuffer b = ByteBuffer.allocate(5 * 8);
+			// b.putDouble(1.1);
+			// b.putDouble(1.2);
+			// b.putDouble(1.3);
+			// b.putDouble(1.4);
+			// b.putDouble(1.5);
+			// byte[] a = b.array();
+			// out.write(a);
 
 			out.close();
 			in.close();
