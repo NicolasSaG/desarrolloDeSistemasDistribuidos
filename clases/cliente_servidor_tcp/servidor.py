@@ -6,7 +6,3 @@ s.listen(3)
 
 while True:
     client_socket, address = s.accept()
-
-s.send(123)
-s.send(123198731.4927237)
-s.send("hola")
