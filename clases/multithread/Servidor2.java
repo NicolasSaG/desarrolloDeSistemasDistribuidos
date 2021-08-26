@@ -65,7 +65,7 @@ class Servidor2 {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         ServerSocket servidor = new ServerSocket(50000);
         while (true) {
             Socket conexion = servidor.accept();
