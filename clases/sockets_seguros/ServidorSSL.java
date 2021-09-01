@@ -12,7 +12,7 @@ class ServidorSSL {
     public static void main(String[] args) throws Exception {
         System.setProperty("javax.net.ssl.keyStore", "keystore_servidor.jks");
         System.setProperty("javax.net.ssl.keyStorePassword", "1234567");
-        System.setProperty("javax.net.debug", "all");
+        //System.setProperty("javax.net.debug", "all");
 
         try {
             ServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
