@@ -14,12 +14,12 @@ public class ClienteSSL {
 
         SSLSocketFactory cliente = (SSLSocketFactory) SSLSocketFactory.getDefault();
         // Socket conexion = cliente.createSocket("localhost", 50000);
-        // Socket conexion = null;
-        SSLSocket conexion = null;
+        Socket conexion = null;
+        // SSLSocket conexion = null;
         while (true) {
             try {
-                // conexion = cliente.createSocket("localhost", 50000);
-                conexion = (SSLSocket) cliente.createSocket("localhost", 50000);
+                conexion = cliente.createSocket("localhost", 50000);
+                // conexion = (SSLSocket) cliente.createSocket("localhost", 50000);
 
                 break;
             } catch (Exception e) {
