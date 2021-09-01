@@ -88,7 +88,7 @@ class Pi {
             double suma = 0;
             int i = 0;
             while (i != 1000000) {
-                suma = (4.0f / (8 * i + 2 * (nodo - 2) + 3)) + suma;
+                suma = (4.0 / (8 * i + 2 * (nodo - 2) + 3)) + suma;
                 i++;
             }
             suma = nodo % 2 == 0 ? -suma : suma;
