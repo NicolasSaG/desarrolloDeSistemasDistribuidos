@@ -31,10 +31,9 @@ public class ClienteSSL {
         DataInputStream in = new DataInputStream(conexion.getInputStream());
 
         out.writeDouble(12312.234);
-
+        Thread.sleep(1000);
         out.close();
         in.close();
-        Thread.sleep(1000);
         conexion.close();
     }
 }
