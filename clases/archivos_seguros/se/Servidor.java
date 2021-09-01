@@ -24,10 +24,10 @@ class Servidor {
                 // recibir/enviar datos
                 String filename = in.readUTF();
                 int len = in.readInt();
-                byte data[] = new byte[1024 * 1024];
+                byte data[] = new byte[len];
                 // recibir archivo
                 read(in, data, 0, len);
-                escribe_archivo(filename, data, len);
+                escribe_archivo(filename, data);
 
                 // Thread.sleep(1000);
                 out.close();
@@ -40,15 +40,14 @@ class Servidor {
     }
 
     public static void main(String[] args) throws Exception {
-        // System.setProperty("javax.net.ssl.keyStore", "keystore_servidor.jks");
-        // System.setProperty("javax.net.ssl.keyStorePassword", "1234567");
+        System.setProperty("javax.net.ssl.keyStore", "keystore_servidor.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "1234567");
 
         try {
-            // ServerSocketFactory socketFactory = (SSLServerSocketFactory)
-            // SSLServerSocketFactory.getDefault();
-            // ServerSocket servidor = socketFactory.createServerSocket(50000);
+            ServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+            ServerSocket servidor = socketFactory.createServerSocket(50000);
 
-            ServerSocket servidor = new ServerSocket(50000);
+            // ServerSocket servidor = new ServerSocket(50000);
             while (true) {
                 Socket conexion = servidor.accept();
                 Worker w = new Worker(conexion);
@@ -61,10 +60,10 @@ class Servidor {
 
     }
 
-    static void escribe_archivo(String archivo, byte[] buffer, int longitud) throws Exception {
+    static void escribe_archivo(String archivo, byte[] buffer) throws Exception {
         FileOutputStream f = new FileOutputStream(archivo);
         try {
-            f.write(buffer, 0, longitud);
+            f.write(buffer);
         } finally {
             f.close();
         }
