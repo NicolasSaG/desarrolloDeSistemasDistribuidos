@@ -1,0 +1,6 @@
+mkdir prueba
+subst f: prueba
+subst g: prueba
+
+Eliminar el disco logico
+subst g: /d

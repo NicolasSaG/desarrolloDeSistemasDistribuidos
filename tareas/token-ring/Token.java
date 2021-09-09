@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+
 class Token {
     static DataInputStream entrada;
     static DataOutputStream salida;
@@ -16,8 +20,13 @@ class Token {
         public void run() {
             // algoritmo 1
             try {
+                System.setProperty("javax.net.ssl.keyStore", "keystore_servidor.jks");
+                System.setProperty("javax.net.ssl.keyStorePassword", "1234567");
+
+                ServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
                 ServerSocket servidor;
-                servidor = new ServerSocket(20000 + nodo);
+                servidor = socketFactory.createServerSocket(20000 + nodo);
+                // servidor = new ServerSocket(20000 + nodo);
                 Socket conexion;
                 conexion = servidor.accept();
                 entrada = new DataInputStream(conexion.getInputStream());
@@ -42,10 +51,15 @@ class Token {
         Worker w;
         w = new Worker();
         w.start();
+
+        System.setProperty("javax.net.ssl.trustStore", "keystore_cliente.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+        SSLSocketFactory cliente = (SSLSocketFactory) SSLSocketFactory.getDefault();
         Socket conexion = null;
         while (true) {
             try {
-                conexion = new Socket(ip, 20000 + (nodo + 1) % 4);
+                conexion = cliente.createSocket(ip, 20000 + (nodo + 1) % 4);
+                // conexion = new Socket(ip, 20000 + (nodo + 1) % 4);
                 break;
             } catch (Exception e) {
                 Thread.sleep(500);
@@ -64,7 +78,12 @@ class Token {
                     System.out.println("Nodo: " + nodo + ", token = " + token);
                 }
             } else {
-                token = entrada.readLong();
+                try {
+                    token = entrada.readLong();
+                } catch (Exception e) {
+                    System.out.println("Error al leer token:" + e.getMessage());
+                    break;
+                }
                 token++;
                 System.out.println("Nodo: " + nodo + ", token = " + token);
             }
@@ -72,7 +91,11 @@ class Token {
             if (nodo == 0 && token >= 1000) {
                 break;
             }
+            // if (nodo != 0 && token >= 1000) {
+            // break;
+            // }
             salida.writeLong(token);
         }
+        Thread.sleep(1000);
     }
 }
