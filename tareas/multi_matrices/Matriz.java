@@ -1,3 +1,5 @@
+import java.nio.ByteBuffer;
+
 public class Matriz {
     static int n = 10;
     static long a[][] = new long[n][n];
@@ -15,25 +17,21 @@ public class Matriz {
         switch (nodo) {
             case 0:
                 inicializarMatrices();
-                // for (int i = 0; i < n; i++) {
-                // for (int j = 0; j < n; j++) {
-                // System.out.println(a[i][j]);
-                // }
-                // }
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < n; j++) {
-                        System.out.print(b[i][j] + " ");
-                    }
-                    System.out.println("");
-                }
-                System.out.println("------------");
                 transponerMatriz(b);
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < n; j++) {
-                        System.out.print(b[i][j] + " ");
-                    }
-                    System.out.println("");
-                }
+
+                byte[] a1 = empaquetarSubMatriz(a, 0);
+                byte[] a2 = empaquetarSubMatriz(a, 1);
+                byte[] b1 = empaquetarSubMatriz(b, 0);
+                byte[] b2 = empaquetarSubMatriz(b, 1);
+
+                // enviar submatrices
+
+                // recibir submatrices
+
+                // generar matriz c
+
+                //
+
                 break;
             case 1:
 
@@ -52,6 +50,17 @@ public class Matriz {
                 System.exit(0);
                 break;
         }
+    }
+
+    private static byte[] empaquetarSubMatriz(long[][] matriz, int submatriz) {
+        ByteBuffer res = ByteBuffer.allocate((n * n / 2) * 8);
+
+        for (int i = 0 + (submatriz * n / 2); i < n / 2 + (submatriz * n / 2); i++) {
+            for (int j = 0; j < n; j++) {
+                res.putLong(matriz[i][j]);
+            }
+        }
+        return res.array();
     }
 
     private static void transponerMatriz(long[][] b2) {
