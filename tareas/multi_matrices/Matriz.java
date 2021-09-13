@@ -19,10 +19,10 @@ public class Matriz {
                 inicializarMatrices();
                 transponerMatriz(b);
 
-                byte[] a1 = empaquetarSubMatriz(a, 0);
-                byte[] a2 = empaquetarSubMatriz(a, 1);
-                byte[] b1 = empaquetarSubMatriz(b, 0);
-                byte[] b2 = empaquetarSubMatriz(b, 1);
+                byte[] a1 = empaquetarSubMatriz(a, 0, n / 2, 0, n);
+                byte[] a2 = empaquetarSubMatriz(a, n / 2, n, 0, n);
+                byte[] b1 = empaquetarSubMatriz(b, 0, n / 2, 0, n);
+                byte[] b2 = empaquetarSubMatriz(b, n / 2, n, 0, n);
 
                 // enviar submatrices
 
@@ -31,6 +31,7 @@ public class Matriz {
                 // generar matriz c
 
                 //
+                imprimirMatriz(a);
 
                 break;
             case 1:
@@ -52,11 +53,20 @@ public class Matriz {
         }
     }
 
-    private static byte[] empaquetarSubMatriz(long[][] matriz, int submatriz) {
+    private static void imprimirMatriz(long[][] matriz) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                System.out.println(matriz[i][j] + "\t");
+            }
+            System.out.println("");
+        }
+    }
+
+    private static byte[] empaquetarSubMatriz(long[][] matriz, int low_i, int sup_i, int low_j, int sup_j) {
         ByteBuffer res = ByteBuffer.allocate((n * n / 2) * 8);
 
-        for (int i = 0 + (submatriz * n / 2); i < n / 2 + (submatriz * n / 2); i++) {
-            for (int j = 0; j < n; j++) {
+        for (int i = low_i; i < sup_i; i++) {
+            for (int j = low_j; j < sup_j; j++) {
                 res.putLong(matriz[i][j]);
             }
         }
