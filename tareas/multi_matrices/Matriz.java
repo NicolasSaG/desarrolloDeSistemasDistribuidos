@@ -6,7 +6,7 @@ public class Matriz {
     static long b[][] = new long[n][n];
     static long c[][] = new long[n][n];
     // ip publicas
-    String ip_nodos[] = { "", "", "", "" };
+    String ip_nodos[] = { "localhost", "localhost", "localhost", "localhost" };
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -18,13 +18,7 @@ public class Matriz {
         switch (nodo) {
             case 0:
                 inicializarMatrices();
-                System.out.println("a");
-                imprimirMatriz(a);
-                System.out.println("b");
-                imprimirMatriz(b);
                 transponerMatriz(b);
-                System.out.println("Transpuesta b");
-                imprimirMatriz(b);
                 byte[] a1 = empaquetarSubMatriz(a, 0, n / 2, 0, n);
                 byte[] a2 = empaquetarSubMatriz(a, n / 2, n, 0, n);
                 byte[] b1 = empaquetarSubMatriz(b, 0, n / 2, 0, n);
@@ -34,13 +28,52 @@ public class Matriz {
 
                 // recibir submatrices
 
+                // chance aqui va un join
                 // generar matriz c
 
-                // imprimirMatriz(a);
-                System.out.println("checksum a:" + obtenerChecksum(a));
-                System.out.println("prueba de desempaque submatriz");
+                // calcular checksum de matriz c
+                long checksum = obtenerChecksum(c);
+                System.out.println("Checksum matriz C: " + checksum);
+
+                if (n == 10) {
+                    System.out.println("-----Matriz a -----");
+                    imprimirMatriz(a);
+                    System.out.println("----- Matriz b -----");
+                    imprimirMatriz(b);
+                    System.out.println("----- Matriz c -----");
+                    imprimirMatriz(c);
+                }
+
+                long[][] aux_a1 = desempaquetarSubMatriz(a1, n, n / 2);
+                long[][] aux_a2 = desempaquetarSubMatriz(a2, n, n / 2);
                 long[][] aux_b1 = desempaquetarSubMatriz(b1, n, n / 2);
+                long[][] aux_b2 = desempaquetarSubMatriz(b2, n, n / 2);
+                System.out.println("a2");
+                imprimirMatriz(aux_a2);
+                System.out.println("b1");
                 imprimirMatriz(aux_b1);
+
+                long[][] c1 = multiplicarMatrices(aux_a1, aux_b1);
+                long[][] c2 = multiplicarMatrices(aux_a1, aux_b2);
+                long[][] c3 = multiplicarMatrices(aux_a2, aux_b1);
+                long[][] c4 = multiplicarMatrices(aux_a2, aux_b2);
+
+                checksum = 0;
+                checksum += obtenerChecksum(c1);
+                checksum += obtenerChecksum(c2);
+                checksum += obtenerChecksum(c3);
+                checksum += obtenerChecksum(c4);
+
+                System.out.println("matrices de c " + checksum);
+                System.out.println("c1");
+                imprimirMatriz(c1);
+                System.out.println("c2");
+                imprimirMatriz(c2);
+                System.out.println("c3");
+                imprimirMatriz(c3);
+                System.out.println("c4");
+                imprimirMatriz(c4);
+
                 break;
             case 1:
 
@@ -78,6 +111,18 @@ public class Matriz {
             }
             System.out.println("");
         }
+    }
+
+    private static long[][] multiplicarMatrices(long[][] m1, long[][] m2) {
+        long res[][] = new long[m1.length][m2.length];
+        for (int i = 0; i < m1.length; i++) {
+            for (int j = 0; j < m2.length; j++) {
+                for (int k = 0; k < n; k++) {
+                    res[i][j] += m1[i][k] * m2[j][k];
+                }
+            }
+        }
+        return res;
     }
 
     private static byte[] empaquetarSubMatriz(long[][] matriz, int low_i, int sup_i, int low_j, int sup_j) {
