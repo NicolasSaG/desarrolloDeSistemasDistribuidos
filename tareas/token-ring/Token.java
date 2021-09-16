@@ -81,7 +81,7 @@ class Token {
                 try {
                     token = entrada.readLong();
                 } catch (Exception e) {
-                    System.out.println("Error al leer token:" + e.getMessage());
+                    System.out.println("Conexion terminada:" + e.getMessage());
                     break;
                 }
                 token++;
@@ -91,9 +91,6 @@ class Token {
             if (nodo == 0 && token >= 1000) {
                 break;
             }
-            // if (nodo != 0 && token >= 1000) {
-            // break;
-            // }
             salida.writeLong(token);
         }
         Thread.sleep(1000);

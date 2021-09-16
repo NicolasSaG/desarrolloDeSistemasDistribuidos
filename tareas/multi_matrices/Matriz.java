@@ -16,7 +16,7 @@ public class Matriz {
     static byte[] b2;
 
     // ip publicas
-    static String ipNodoCentral = "localhost";
+    static String ipNodoCentral = "13.72.77.247";
 
     static class Worker extends Thread {
         Socket conexion;
@@ -52,49 +52,32 @@ public class Matriz {
                 read(in, cn, 0, (n / 2) * (n / 2) * 8);
                 long[][] cn_matriz = desempaquetarSubMatriz(cn, n / 2, n / 2);
 
-                System.out.println("recibiendo nodo " + idNodo);
                 // guardar submatriz cn en matriz c
                 synchronized (obj) {
                     if (idNodo == 1) {
-                        System.out.println("guardando c1 nodo " + idNodo);
-                        imprimirMatriz(cn_matriz);
                         for (int i = 0; i < n / 2; i++) {
                             for (int j = 0; j < n / 2; j++) {
                                 c[i][j] = cn_matriz[i][j];
-                                System.out.println("i:" + i + ", j:" + j);
                             }
                         }
-                        imprimirMatriz(c);
                     } else if (idNodo == 2) {
-                        System.out.println("guardando c2 nodo " + idNodo);
-                        imprimirMatriz(cn_matriz);
                         for (int i = 0; i < n / 2; i++) {
                             for (int j = 0; j < n / 2; j++) {
                                 c[i][n / 2 + j] = cn_matriz[i][j];
-                                System.out.println("i:" + i + ", j:" + (n / 2 + j));
                             }
                         }
-                        imprimirMatriz(c);
                     } else if (idNodo == 3) {
-                        System.out.println("guardando c3 nodo " + idNodo);
-                        imprimirMatriz(cn_matriz);
                         for (int i = 0; i < n / 2; i++) {
                             for (int j = 0; j < n / 2; j++) {
                                 c[n / 2 + i][j] = cn_matriz[i][j];
-                                System.out.println("i:" + (n / 2 + i) + ", j:" + j);
                             }
                         }
-                        imprimirMatriz(c);
                     } else if (idNodo == 4) {
-                        System.out.println("guardando c4 nodo " + idNodo);
-                        imprimirMatriz(cn_matriz);
                         for (int i = 0; i < n / 2; i++) {
                             for (int j = 0; j < n / 2; j++) {
                                 c[n / 2 + i][n / 2 + j] = cn_matriz[i][j];
-                                System.out.println("i:" + (n / 2 + i) + ", j:" + (n / 2 + j));
                             }
                         }
-                        imprimirMatriz(c);
                     }
                 }
 
@@ -174,9 +157,8 @@ public class Matriz {
             byte[] data = new byte[n * (n / 2) * 8];
             // recibir a enesimo
             read(in, data, 0, n * (n / 2) * 8);
-            System.out.println("recibiendo...");
             long[][] an = desempaquetarSubMatriz(data, n, n / 2);
-            imprimirMatriz(an);
+
             // recibir b enesimo
             read(in, data, 0, n * (n / 2) * 8);
             long[][] bn = desempaquetarSubMatriz(data, n, n / 2);

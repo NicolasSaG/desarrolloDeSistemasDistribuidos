@@ -1,9 +1,12 @@
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 
 class ServidorMulticast {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        System.setProperty("java.net.preferIPv4Stack", "true");
         envia_mensaje("hola".getBytes(), "230.0.0.0", 50000);
 
         ByteBuffer b = ByteBuffer.allocate(5 * 8);
