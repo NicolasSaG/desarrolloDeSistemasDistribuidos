@@ -1,5 +1,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 
 public class Matriz {
@@ -8,34 +10,94 @@ public class Matriz {
     static long b[][] = new long[n][n];
     static long c[][] = new long[n][n];
     static Object obj = new Object();
+    static byte[] a1;
+    static byte[] a2;
+    static byte[] b1;
+    static byte[] b2;
 
     // ip publicas
     static String ipNodoCentral = "localhost";
 
     static class Worker extends Thread {
         Socket conexion;
-        byte[] an;
-        byte[] bn;
 
-        Worker(Socket conexion, byte[] an, byte[] bn) {
+        Worker(Socket conexion) {
             this.conexion = conexion;
-            this.an = an;
-            this.bn = bn;
         }
 
         public void run() {
             try {
                 DataOutputStream out = new DataOutputStream(conexion.getOutputStream());
                 DataInputStream in = new DataInputStream(conexion.getInputStream());
+                // identificar al nodo
+                int idNodo = in.readInt();
 
                 // enviar submatrices
-                out.write(an);
-                out.write(bn);
-                // recibir multiplicacion de cn
-                byte[] cn = new byte[(n / 4) * (n / 4) * 8];
-                read(in, a, 0, (n / 4) * (n / 4) * 8);
+                if (idNodo == 1) {
+                    out.write(a1);
+                    out.write(b1);
+                } else if (idNodo == 2) {
+                    out.write(a1);
+                    out.write(b2);
+                } else if (idNodo == 3) {
+                    out.write(a2);
+                    out.write(b1);
+                } else if (idNodo == 4) {
+                    out.write(a2);
+                    out.write(b2);
+                }
 
+                // recibir multiplicacion de cn
+                byte[] cn = new byte[(n / 2) * (n / 2) * 8];
+                read(in, cn, 0, (n / 2) * (n / 2) * 8);
+                long[][] cn_matriz = desempaquetarSubMatriz(cn, n / 2, n / 2);
+
+                System.out.println("recibiendo nodo " + idNodo);
                 // guardar submatriz cn en matriz c
+                synchronized (obj) {
+                    if (idNodo == 1) {
+                        System.out.println("guardando c1 nodo " + idNodo);
+                        imprimirMatriz(cn_matriz);
+                        for (int i = 0; i < n / 2; i++) {
+                            for (int j = 0; j < n / 2; j++) {
+                                c[i][j] = cn_matriz[i][j];
+                                System.out.println("i:" + i + ", j:" + j);
+                            }
+                        }
+                        imprimirMatriz(c);
+                    } else if (idNodo == 2) {
+                        System.out.println("guardando c2 nodo " + idNodo);
+                        imprimirMatriz(cn_matriz);
+                        for (int i = 0; i < n / 2; i++) {
+                            for (int j = 0; j < n / 2; j++) {
+                                c[i][n / 2 + j] = cn_matriz[i][j];
+                                System.out.println("i:" + i + ", j:" + (n / 2 + j));
+                            }
+                        }
+                        imprimirMatriz(c);
+                    } else if (idNodo == 3) {
+                        System.out.println("guardando c3 nodo " + idNodo);
+                        imprimirMatriz(cn_matriz);
+                        for (int i = 0; i < n / 2; i++) {
+                            for (int j = 0; j < n / 2; j++) {
+                                c[n / 2 + i][j] = cn_matriz[i][j];
+                                System.out.println("i:" + (n / 2 + i) + ", j:" + j);
+                            }
+                        }
+                        imprimirMatriz(c);
+                    } else if (idNodo == 4) {
+                        System.out.println("guardando c4 nodo " + idNodo);
+                        imprimirMatriz(cn_matriz);
+                        for (int i = 0; i < n / 2; i++) {
+                            for (int j = 0; j < n / 2; j++) {
+                                c[n / 2 + i][n / 2 + j] = cn_matriz[i][j];
+                                System.out.println("i:" + (n / 2 + i) + ", j:" + (n / 2 + j));
+                            }
+                        }
+                        imprimirMatriz(c);
+                    }
+                }
+
                 out.close();
                 in.close();
                 conexion.close();
@@ -45,7 +107,7 @@ public class Matriz {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.out.println("Error al ejecutar programa, agregue el nodo 0-4");
         }
@@ -55,21 +117,30 @@ public class Matriz {
         if (nodo == 0) {
             inicializarMatrices();
             transponerMatriz(b);
-            byte[] a1 = empaquetarSubMatriz(a, 0, n / 2, 0, n);
-            byte[] a2 = empaquetarSubMatriz(a, n / 2, n, 0, n);
-            byte[] b1 = empaquetarSubMatriz(b, 0, n / 2, 0, n);
-            byte[] b2 = empaquetarSubMatriz(b, n / 2, n, 0, n);
+            a1 = empaquetarSubMatriz(a, 0, n / 2, 0, n);
+            a2 = empaquetarSubMatriz(a, n / 2, n, 0, n);
+            b1 = empaquetarSubMatriz(b, 0, n / 2, 0, n);
+            b2 = empaquetarSubMatriz(b, n / 2, n, 0, n);
 
             ServerSocket servidor;
             servidor = new ServerSocket(20000);
             Worker[] v = new Worker[4];
+            int i = 0;
+            while (i != 4) {
+                Socket conexion;
+                conexion = servidor.accept();
+                v[i] = new Worker(conexion);
 
-            // enviar submatrices
+                v[i].start();
+                i++;
+            }
 
-            // recibir submatrices
-
-            // chance aqui va un join
-            // generar matriz c
+            i = 0;
+            while (i != 4) {
+                v[i].join();
+                i++;
+            }
+            servidor.close();
 
             // calcular checksum de matriz c
             long checksum = obtenerChecksum(c);
@@ -79,30 +150,11 @@ public class Matriz {
                 System.out.println("-----Matriz a -----");
                 imprimirMatriz(a);
                 System.out.println("----- Matriz b -----");
+                transponerMatriz(b);
                 imprimirMatriz(b);
                 System.out.println("----- Matriz c -----");
                 imprimirMatriz(c);
             }
-
-            // long[][] aux_a1 = desempaquetarSubMatriz(a1, n, n / 2);
-            // long[][] aux_a2 = desempaquetarSubMatriz(a2, n, n / 2);
-            // long[][] aux_b1 = desempaquetarSubMatriz(b1, n, n / 2);
-            // long[][] aux_b2 = desempaquetarSubMatriz(b2, n, n / 2);
-            // System.out.println("a2");
-            // imprimirMatriz(aux_a2);
-            // System.out.println("b1");
-            // imprimirMatriz(aux_b1);
-
-            // long[][] c1 = multiplicarMatrices(aux_a1, aux_b1);
-            // long[][] c2 = multiplicarMatrices(aux_a1, aux_b2);
-            // long[][] c3 = multiplicarMatrices(aux_a2, aux_b1);
-            // long[][] c4 = multiplicarMatrices(aux_a2, aux_b2);
-
-            // checksum = 0;
-            // checksum += obtenerChecksum(c1);
-            // checksum += obtenerChecksum(c2);
-            // checksum += obtenerChecksum(c3);
-            // checksum += obtenerChecksum(c4);
         } else {
             Socket conexion = null;
             while (true) {
@@ -116,15 +168,21 @@ public class Matriz {
             DataOutputStream out = new DataOutputStream(conexion.getOutputStream());
             DataInputStream in = new DataInputStream(conexion.getInputStream());
 
+            // enviar idNodo
+            out.writeInt(nodo);
+
             byte[] data = new byte[n * (n / 2) * 8];
             // recibir a enesimo
             read(in, data, 0, n * (n / 2) * 8);
+            System.out.println("recibiendo...");
             long[][] an = desempaquetarSubMatriz(data, n, n / 2);
+            imprimirMatriz(an);
             // recibir b enesimo
             read(in, data, 0, n * (n / 2) * 8);
             long[][] bn = desempaquetarSubMatriz(data, n, n / 2);
-
+            imprimirMatriz(bn);
             long[][] cn = multiplicarMatrices(an, bn);
+            imprimirMatriz(cn);
             byte[] cRes = empaquetarSubMatriz(cn, 0, cn.length, 0, cn[0].length);
             // enviar matriz
             out.write(cRes);
@@ -168,7 +226,7 @@ public class Matriz {
     }
 
     private static byte[] empaquetarSubMatriz(long[][] matriz, int low_i, int sup_i, int low_j, int sup_j) {
-        ByteBuffer res = ByteBuffer.allocate((n * n / 2) * 8);
+        ByteBuffer res = ByteBuffer.allocate(((sup_i - low_i) * (sup_j - low_j)) * 8);
 
         for (int i = low_i; i < sup_i; i++) {
             for (int j = low_j; j < sup_j; j++) {
@@ -201,8 +259,10 @@ public class Matriz {
     private static void inicializarMatrices() {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                a[i][j] = 2 * i + j;
-                b[i][j] = 2 * i - j;
+                a[i][j] = i + 2 * j;
+                b[i][j] = i - 2 * j;
+                // a[i][j] = 2 * i + j;
+                // b[i][j] = 2 * i - j;
             }
         }
     }
