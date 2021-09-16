@@ -6,6 +6,7 @@ public class Matriz {
     static long b[][] = new long[n][n];
     static long c[][] = new long[n][n];
     // ip publicas
+    String ip_nodos[] = { "", "", "", "" };
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -17,8 +18,13 @@ public class Matriz {
         switch (nodo) {
             case 0:
                 inicializarMatrices();
+                System.out.println("a");
+                imprimirMatriz(a);
+                System.out.println("b");
+                imprimirMatriz(b);
                 transponerMatriz(b);
-
+                System.out.println("Transpuesta b");
+                imprimirMatriz(b);
                 byte[] a1 = empaquetarSubMatriz(a, 0, n / 2, 0, n);
                 byte[] a2 = empaquetarSubMatriz(a, n / 2, n, 0, n);
                 byte[] b1 = empaquetarSubMatriz(b, 0, n / 2, 0, n);
@@ -30,9 +36,11 @@ public class Matriz {
 
                 // generar matriz c
 
-                //
-                imprimirMatriz(a);
-
+                // imprimirMatriz(a);
+                System.out.println("checksum a:" + obtenerChecksum(a));
+                System.out.println("prueba de desempaque submatriz");
+                long[][] aux_b1 = desempaquetarSubMatriz(b1, n, n / 2);
+                imprimirMatriz(aux_b1);
                 break;
             case 1:
 
@@ -53,10 +61,20 @@ public class Matriz {
         }
     }
 
+    private static long obtenerChecksum(long[][] matriz) {
+        long res = 0;
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[i].length; j++) {
+                res += matriz[i][j];
+            }
+        }
+        return res;
+    }
+
     private static void imprimirMatriz(long[][] matriz) {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                System.out.println(matriz[i][j] + "\t");
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[i].length; j++) {
+                System.out.print(matriz[i][j] + "\t");
             }
             System.out.println("");
         }
@@ -71,6 +89,17 @@ public class Matriz {
             }
         }
         return res.array();
+    }
+
+    private static long[][] desempaquetarSubMatriz(byte[] data, int x, int y) {
+        ByteBuffer b = ByteBuffer.wrap(data);
+        long[][] res = new long[y][x];
+        for (int i = 0; i < y; i++) {
+            for (int j = 0; j < x; j++) {
+                res[i][j] = b.getLong();
+            }
+        }
+        return res;
     }
 
     private static void transponerMatriz(long[][] b2) {
