@@ -16,7 +16,7 @@ public class Matriz {
     static byte[] b2;
 
     // ip publicas
-    static String ipNodoCentral = "13.72.77.247";
+    static String ipNodoCentral = "20.102.120.68";
 
     static class Worker extends Thread {
         Socket conexion;
@@ -162,9 +162,7 @@ public class Matriz {
             // recibir b enesimo
             read(in, data, 0, n * (n / 2) * 8);
             long[][] bn = desempaquetarSubMatriz(data, n, n / 2);
-            imprimirMatriz(bn);
             long[][] cn = multiplicarMatrices(an, bn);
-            imprimirMatriz(cn);
             byte[] cRes = empaquetarSubMatriz(cn, 0, cn.length, 0, cn[0].length);
             // enviar matriz
             out.write(cRes);
@@ -241,10 +239,8 @@ public class Matriz {
     private static void inicializarMatrices() {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                a[i][j] = i + 2 * j;
-                b[i][j] = i - 2 * j;
-                // a[i][j] = 2 * i + j;
-                // b[i][j] = 2 * i - j;
+                a[i][j] = 2 * i + j;
+                b[i][j] = 2 * i - j;
             }
         }
     }
