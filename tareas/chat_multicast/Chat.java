@@ -1,5 +1,4 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -7,7 +6,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
@@ -37,7 +35,6 @@ public class Chat {
     }
 
     public static void main(String[] args) throws Exception {
-        Process tipo_consola = Runtime.getRuntime().exec("cmd chcp 1252");
 
         new Worker().start();
         String nombre = args[0];
