@@ -31,7 +31,7 @@ public class Lamport {
 
                 // implementar algoritmo de lamport
                 synchronized (lock) {
-                    if (tiempo_recibido > reloj_logico) {
+                    if (tiempo_recibido >= reloj_logico) {
                         reloj_logico = tiempo_recibido + 1;
                     }
                 }
@@ -81,13 +81,6 @@ public class Lamport {
                         reloj_logico += 5;
                     } else if (nodo == 2) {
                         reloj_logico += 6;
-                        if (reloj_logico == 102) {
-                            try {
-                                envia_mensaje(reloj_logico, hosts[1], puertos[1]);
-                            } catch (Exception e) {
-                                System.out.println(e.getMessage());
-                            }
-                        }
                     }
                 }
                 try {
@@ -112,7 +105,13 @@ public class Lamport {
 
         Servidor servidor = new Servidor();
         servidor.start();
+
         // barrera para esperar a que todos los nodos esten on
+        for (int i = 0; i < num_nodos; i++) {
+            if (nodo != i) {
+                envia_mensaje(-1, hosts[i], puertos[i]);
+            }
+        }
 
         Reloj reloj = new Reloj();
         reloj.start();
