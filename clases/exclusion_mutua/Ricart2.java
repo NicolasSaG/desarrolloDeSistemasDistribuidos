@@ -3,23 +3,26 @@ import java.io.DataOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
-import java.util.Queue;
 
-//java Ricart 0 localhost:50000 localhost:50001 localhost:50002
-//java Ricart 1 localhost:50000 localhost:50001 localhost:50002
-//java Ricart 2 localhost:50000 localhost:50001 localhost:50002
-public class Ricart {
+//java Ricart2 0 localhost:50000 localhost:50001 localhost:50002
+//java Ricart2 1 localhost:50000 localhost:50001 localhost:50002
+//java Ricart2 2 localhost:50000 localhost:50001 localhost:50002
+enum Recurso {
+    Default, EnPosesion, EnEspera;
+}
+
+public class Ricart2 {
     static long reloj_logico;
     static String[] hosts;
     static int[] puertos;
     static int num_nodos;
     static int nodo;
-    static int count_ok;
-    static boolean posesion_recurso = false;
-    static boolean en_espera_recurso = false;
     static Object lock = new Object();
-    static Queue<Integer> cola = new LinkedList<Integer>();
-    static long[] tiempos_enviados;
+
+    static LinkedList<Integer> cola = new LinkedList<Integer>();
+    static int num_ok_recibidos;
+    static long tiempo_logico_enviado;
+    static Recurso estado = Recurso.Default;
     public static final int SINCRONIZAR_RELOJ = 0;
     public static final int SOLICITAR_RECURSO = 1;
     public static final int OK = 2;
@@ -32,19 +35,14 @@ public class Ricart {
         }
 
         public void run() {
-            // System.out.println("Inicio del thread Worker");
-
-            int peticion, nodo_recibido;
-            long tiempo_recibido, t1, t2;
-            String mensaje;
+            int peticion, nodo_recibido, id_recurso_recibido;
+            long tiempo_recibido;
             try {
                 DataInputStream in = new DataInputStream(cliente.getInputStream());
                 peticion = in.readInt();
 
                 if (peticion == SINCRONIZAR_RELOJ) {
-                    nodo_recibido = in.readInt();
                     tiempo_recibido = in.readLong();
-                    // implementar algoritmo de lamport
                     synchronized (lock) {
                         if (tiempo_recibido >= reloj_logico) {
                             reloj_logico = tiempo_recibido + 1;
@@ -52,44 +50,60 @@ public class Ricart {
                     }
                 } else if (peticion == SOLICITAR_RECURSO) {
                     nodo_recibido = in.readInt();
+                    id_recurso_recibido = in.readInt();
                     tiempo_recibido = in.readLong();
-                    System.out.println("nodo recibido: " + nodo_recibido);
-                    synchronized (lock) {
-                        System.out.println("peticion de solicitud de recurso del nodo " + nodo_recibido
-                                + "\nEstado actual:\nEn posesion del recurso: " + posesion_recurso
-                                + "\nEn espera del recurso:" + en_espera_recurso);
 
-                        if (nodo_recibido == nodo) {
-                            envia_mensaje(OK, "OK", hosts[nodo], puertos[nodo]);
-                        } else if (posesion_recurso) {
+                    System.out.println("\tnodo recibido: " + nodo_recibido);
+                    System.out.println("\tid recurso recibido: " + id_recurso_recibido);
+                    System.out.println("\ttiempo recibido: " + tiempo_recibido);
+                    System.out.println("\testado actual: " + estado);
+
+                    ajustar_reloj(tiempo_recibido);
+
+                    if (estado == Recurso.EnPosesion) {
+                        cola.add(nodo_recibido);
+                    } else if (estado == Recurso.Default) {
+                        long tiempo_temporal;
+                        synchronized (lock) {
+                            tiempo_temporal = reloj_logico;
+                        }
+                        envia_mensaje(OK, "OK", tiempo_temporal, hosts[nodo_recibido], puertos[nodo_recibido]);
+                    } else if (estado == Recurso.EnEspera) {
+                        long t1 = tiempo_recibido;
+                        long t2 = tiempo_logico_enviado;
+                        if (t1 < t2) {
+                            long tiempo_temporal;
+                            synchronized (lock) {
+                                tiempo_temporal = reloj_logico;
+                            }
+                            envia_mensaje(OK, "OK", tiempo_temporal, hosts[nodo_recibido], puertos[nodo_recibido]);
+                        } else if (t2 < t1) {
                             cola.add(nodo_recibido);
-                        } else if (!en_espera_recurso) {
-                            envia_mensaje(OK, "OK", hosts[nodo_recibido], puertos[nodo_recibido]);
-                        } else if (en_espera_recurso) {
-                            t1 = tiempo_recibido;
-                            t2 = tiempos_enviados[nodo_recibido];
-                            System.out.println("t1 = " + t1 + " t2= " + t2);
-                            if (t1 < t2) {
-                                envia_mensaje(OK, "OK", hosts[nodo_recibido], puertos[nodo_recibido]);
-                            } else if (t2 < t1) {
+                        } else {
+                            if (Math.min(nodo, nodo_recibido) == nodo) {
                                 cola.add(nodo_recibido);
                             } else {
-                                if (Math.min(nodo, nodo_recibido) == nodo) {
-                                    cola.add(nodo_recibido);
-                                } else {
-                                    envia_mensaje(OK, "OK", hosts[nodo_recibido], puertos[nodo_recibido]);
+                                long tiempo_temporal;
+                                synchronized (lock) {
+                                    tiempo_temporal = reloj_logico;
                                 }
+                                envia_mensaje(OK, "OK", tiempo_temporal, hosts[nodo_recibido], puertos[nodo_recibido]);
                             }
-
                         }
                     }
+
                 } else if (peticion == OK) {
-                    mensaje = in.readUTF();
+                    String mensaje = in.readUTF();
+                    tiempo_recibido = in.readLong();
+                    ajustar_reloj(tiempo_recibido);
+
                     if (mensaje.equals("OK")) {
                         synchronized (lock) {
-                            count_ok += 1;
-                            if (count_ok == num_nodos) {
-                                posesion_recurso = true;
+                            num_ok_recibidos += 1;
+                            System.out.println("OK recibido..");
+                            if (num_ok_recibidos == num_nodos - 1) {
+                                System.out.println("adquiri el recurso.");
+                                estado = Recurso.EnPosesion;
                             }
                         }
                     }
@@ -157,7 +171,6 @@ public class Ricart {
         num_nodos = args.length - 1;
         hosts = new String[num_nodos];
         puertos = new int[num_nodos];
-        tiempos_enviados = new long[num_nodos];
 
         for (int i = 0; i < num_nodos; i++) {
             hosts[i] = args[i + 1].split(":")[0];
@@ -170,64 +183,52 @@ public class Ricart {
         // barrera para esperar a que todos los nodos esten on
         for (int i = 0; i < num_nodos; i++) {
             if (nodo != i) {
-                envia_mensaje(SINCRONIZAR_RELOJ, i, -1, hosts[i], puertos[i]);
+                envia_mensaje(0, -1, hosts[i], puertos[i]);
             }
         }
 
         Reloj reloj = new Reloj();
         reloj.start();
 
-        // inicio de ricart
-        synchronized (lock) {
-            en_espera_recurso = true;
+        Thread.sleep(1000);
+        bloquearRecurso();
+        while (estado != Recurso.EnPosesion) {
+            Thread.sleep(100);
         }
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        for (int i = 0; i < num_nodos; i++) {// bloquear recurso
-            long temp;
-            synchronized (lock) {
-                temp = reloj_logico;
-                System.out.println("Tiempo de envio:" + temp);
-            }
-            envia_mensaje(SOLICITAR_RECURSO, nodo, temp, hosts[i], puertos[i]);
-            tiempos_enviados[i] = temp;
-
-        }
-
-        boolean flag = false;
-        while (!flag) {
-            synchronized (lock) {
-                flag = posesion_recurso;
-            }
-        }
-        System.out.println("recurso adquirido");
-        synchronized (lock) {
-            System.out.println("tiempo actual: " + reloj_logico);
-            en_espera_recurso = false;
-        }
-
-        try {
-            Thread.sleep(3000);
-            synchronized (lock) {
-                System.out.println("tiempoa despues de 3 segundos: " + reloj_logico);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        synchronized (lock) {
-            posesion_recurso = false;
-            System.out.println("Avisando a la cola en " + reloj_logico);
-        }
-        avisar_cola();
-        servidor.join();
-
+        Thread.sleep(3000);
+        desbloquearRecurso();
     }
 
-    static void envia_mensaje(int peticion, int nodo, long tiempo_logico, String host, int puerto) throws Exception {
+    private static void desbloquearRecurso() throws Exception {
+        estado = Recurso.Default;
+        int nodo_actual;
+        long temp_tiempo;
+        synchronized (lock) {
+            temp_tiempo = reloj_logico;
+        }
+
+        while (!cola.isEmpty()) {
+            nodo_actual = cola.poll();
+            envia_mensaje(OK, "OK", temp_tiempo, hosts[nodo_actual], puertos[nodo_actual]);
+        }
+    }
+
+    private static void bloquearRecurso() throws Exception {
+        estado = Recurso.EnEspera;
+        num_ok_recibidos = 0;
+        synchronized (lock) {
+            tiempo_logico_enviado = reloj_logico;
+        }
+
+        for (int i = 0; i < num_nodos; i++) {
+            if (nodo != i) {
+                envia_mensaje(SOLICITAR_RECURSO, nodo, 0, tiempo_logico_enviado, hosts[i], puertos[i]);
+            }
+        }
+    }
+
+    static void envia_mensaje(int peticion, int nodo, int id_recurso, long tiempo_logico, String host, int puerto)
+            throws Exception {
         Socket cliente = null;
         while (true) {
             try {
@@ -242,13 +243,15 @@ public class Ricart {
 
         out.writeInt(peticion);
         out.writeInt(nodo);
+        out.writeInt(id_recurso);
         out.writeLong(tiempo_logico);
 
         out.close();
         cliente.close();
     }
 
-    static void envia_mensaje(int peticion, String mensaje, String host, int puerto) throws Exception {
+    static void envia_mensaje(int peticion, String mensaje, long tiempo_logico, String host, int puerto)
+            throws Exception {
         Socket cliente = null;
         while (true) {
             try {
@@ -263,21 +266,40 @@ public class Ricart {
 
         out.writeInt(peticion);
         out.writeUTF(mensaje);
+        out.writeLong(tiempo_logico);
 
         out.close();
         cliente.close();
     }
 
-    static void avisar_cola() throws Exception {
-        int nodo_actual;
+    static void envia_mensaje(int peticion, long tiempo_logico, String host, int puerto) throws Exception {
+        Socket cliente = null;
+        while (true) {
+            try {
+                cliente = new Socket(host, puerto);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(100);
+            }
+        }
+
+        DataOutputStream out = new DataOutputStream(cliente.getOutputStream());
+
+        out.writeInt(peticion);
         synchronized (lock) {
-            while (!cola.isEmpty()) {
-                nodo_actual = cola.poll();
-                System.out.println("enviando OK a " + nodo_actual);
-                envia_mensaje(OK, "OK", hosts[nodo_actual], puertos[nodo_actual]);
+            out.writeLong(tiempo_logico);
+        }
+
+        out.close();
+        cliente.close();
+    }
+
+    static void ajustar_reloj(long tiempo_recibido) {
+        synchronized (lock) {
+            if (tiempo_recibido >= reloj_logico) {
+                reloj_logico = tiempo_recibido + 1;
             }
         }
     }
-}
 
-// modificar envia mensaje para tipos de datos
+}
