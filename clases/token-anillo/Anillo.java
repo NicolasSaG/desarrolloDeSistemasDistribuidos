@@ -6,9 +6,10 @@ import java.io.DataOutputStream;
 
 class Anillo {
     static int nodo;
+    static Object lock = new Object();
+    static boolean bloqueo = false;
+    static boolean solicitud_bloqueo = false;
     static int num_nodos = 3;
-    static DataInputStream in;
-    static DataOutputStream out;
 
     static class Worker extends Thread {
         Socket conexion;
@@ -21,14 +22,25 @@ class Anillo {
             long token;
 
             try {
-                out = new DataOutputStream(conexion.getOutputStream());
-                in = new DataInputStream(conexion.getInputStream());
-
+                DataInputStream in = new DataInputStream(conexion.getInputStream());
                 token = in.readLong();
                 System.out.println("Token recibido: " + token);
-                out.writeLong(token);
+                token += 1;
+                synchronized (lock) {
+                    System.out.println("solicitud_bloqueo " + solicitud_bloqueo);
+                    if (solicitud_bloqueo) {
+                        bloqueo = true;
+                    } else {
+                        bloqueo = false;
+                    }
+                    if (!bloqueo) {
+                        bloqueo = false;
+                        System.out.println("    --" + solicitud_bloqueo);
+                        envia_mensaje(token, "localhost", 50000 + (nodo + 1) % num_nodos);
 
-                out.close();
+                    }
+                }
+
                 in.close();
                 conexion.close();
             } catch (Exception e) {
@@ -66,5 +78,52 @@ class Anillo {
         Servidor s = new Servidor();
         s.start();
 
+        if (nodo == 0) {
+            envia_mensaje(1, "localhost", 50000 + (nodo + 1) % num_nodos);
+        }
+        Thread.sleep(3000);
+        adquirirBloqueo();
+        while (!bloqueo) {
+            System.out.println("adquiriendo bloqueo...");
+            Thread.sleep(100);
+        }
+
+        System.out.println("Bloqueo adquirido");
+        Thread.sleep(3000);
+        liberarBloqueo();
+        System.out.println("Bloqueo liberado");
+    }
+
+    public static void adquirirBloqueo() {
+        synchronized (lock) {
+            solicitud_bloqueo = true;
+        }
+    }
+
+    public static void liberarBloqueo() throws Exception {
+        synchronized (lock) {
+            solicitud_bloqueo = false;
+        }
+        // enviar token
+        envia_mensaje(1, "localhost", 50000 + (nodo + 1) % num_nodos);
+    }
+
+    static void envia_mensaje(long token, String host, int puerto) throws Exception {
+        Socket cliente = null;
+        while (true) {
+            try {
+                cliente = new Socket(host, puerto);
+                break;
+            } catch (Exception e) {
+                Thread.sleep(100);
+            }
+        }
+
+        DataOutputStream out = new DataOutputStream(cliente.getOutputStream());
+
+        out.writeLong(token);
+
+        out.close();
+        cliente.close();
     }
 }
