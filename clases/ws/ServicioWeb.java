@@ -2,8 +2,9 @@ package ws;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.jws;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
 //compilar en la carpeta padre de ws
 //compilar javac ws/ServicioWeb.java
 
