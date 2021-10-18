@@ -1,10 +1,13 @@
+import java.rmi.RemoteException;
+import java.rmi.Naming;
+
 public class MatrizLocal {
     static int n = 6;
     static long a[][] = new long[n][n];
     static long b[][] = new long[n][n];
     static long c[][] = new long[n][n];
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException, Exception {
         inicializarMatrices();
         System.out.println("a");
         imprimirMatriz(a);
@@ -14,15 +17,19 @@ public class MatrizLocal {
         transponerMatriz(b);
         imprimirMatriz(b);
 
+        String url = "rmi://localhost/prueba";
+        InterfaceMatriz r = (InterfaceMatriz) Naming.lookup(url);
+
         long[][] a1 = separa_matriz(a, 0);
         long[][] a2 = separa_matriz(a, n / 2);
         long[][] b1 = separa_matriz(b, 0);
         long[][] b2 = separa_matriz(b, n / 2);
 
-        long[][] c1 = multiplicarMatrices(a1, b1);
-        long[][] c2 = multiplicarMatrices(a1, b2);
-        long[][] c3 = multiplicarMatrices(a2, b1);
-        long[][] c4 = multiplicarMatrices(a2, b2);
+        // MatrizRMI o = new MatrizRMI();
+        long[][] c1 = r.multiplicarMatrices(a1, b1, n);
+        long[][] c2 = r.multiplicarMatrices(a1, b2, n);
+        long[][] c3 = r.multiplicarMatrices(a2, b1, n);
+        long[][] c4 = r.multiplicarMatrices(a2, b2, n);
 
         acomoda_matriz(c, c1, 0, 0);
         acomoda_matriz(c, c2, 0, n / 2);
@@ -51,18 +58,6 @@ public class MatrizLocal {
             }
             System.out.println("");
         }
-    }
-
-    private static long[][] multiplicarMatrices(long[][] m1, long[][] m2) {
-        long res[][] = new long[m1.length][m2.length];
-        for (int i = 0; i < m1.length; i++) {
-            for (int j = 0; j < m2.length; j++) {
-                for (int k = 0; k < n; k++) {
-                    res[i][j] += m1[i][k] * m2[j][k];
-                }
-            }
-        }
-        return res;
     }
 
     private static void transponerMatriz(long[][] b2) {
