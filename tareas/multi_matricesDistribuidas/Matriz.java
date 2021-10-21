@@ -2,7 +2,7 @@ import java.rmi.RemoteException;
 import java.rmi.Naming;
 
 public class Matriz {
-    static int n = 3000;
+    static int n = 9;
     static double a[][] = new double[n][n];
     static double b[][] = new double[n][n];
     static double c[][] = new double[n][n];
@@ -26,15 +26,18 @@ public class Matriz {
         double[][] b2 = separa_matriz(b, n / 3);
         double[][] b3 = separa_matriz(b, (2 * n) / 3);
 
-        double[][] c1 = multiplicarMatrices(a1, b1, n);
-        double[][] c2 = multiplicarMatrices(a1, b2, n);
-        double[][] c3 = multiplicarMatrices(a1, b3, n);
-        double[][] c4 = multiplicarMatrices(a2, b1, n);
-        double[][] c5 = multiplicarMatrices(a2, b2, n);
-        double[][] c6 = multiplicarMatrices(a2, b3, n);
-        double[][] c7 = multiplicarMatrices(a3, b1, n);
-        double[][] c8 = multiplicarMatrices(a3, b2, n);
-        double[][] c9 = multiplicarMatrices(a3, b3, n);
+        String url = "rmi://localhost/prueba";
+        InterfaceMatriz r = (InterfaceMatriz) Naming.lookup(url);
+
+        double[][] c1 = r.multiplicarMatrices(a1, b1, n);
+        double[][] c2 = r.multiplicarMatrices(a1, b2, n);
+        double[][] c3 = r.multiplicarMatrices(a1, b3, n);
+        double[][] c4 = r.multiplicarMatrices(a2, b1, n);
+        double[][] c5 = r.multiplicarMatrices(a2, b2, n);
+        double[][] c6 = r.multiplicarMatrices(a2, b3, n);
+        double[][] c7 = r.multiplicarMatrices(a3, b1, n);
+        double[][] c8 = r.multiplicarMatrices(a3, b2, n);
+        double[][] c9 = r.multiplicarMatrices(a3, b3, n);
 
         acomoda_matriz(c, c1, 0, 0);
         acomoda_matriz(c, c2, 0, n / 3);
@@ -60,18 +63,6 @@ public class Matriz {
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[i].length; j++) {
                 res += matriz[i][j];
-            }
-        }
-        return res;
-    }
-
-    private static double[][] multiplicarMatrices(double[][] m1, double[][] m2, int n) {
-        double res[][] = new double[m1.length][m2.length];
-        for (int i = 0; i < m1.length; i++) {
-            for (int j = 0; j < m2.length; j++) {
-                for (int k = 0; k < n; k++) {
-                    res[i][j] += m1[i][k] * m2[j][k];
-                }
             }
         }
         return res;
