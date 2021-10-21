@@ -26,18 +26,23 @@ public class Matriz {
         double[][] b2 = separa_matriz(b, n / 3);
         double[][] b3 = separa_matriz(b, (2 * n) / 3);
 
-        String url = "rmi://localhost/prueba";
-        InterfaceMatriz r = (InterfaceMatriz) Naming.lookup(url);
+        // parte de vms
+        String url_1 = "rmi://localhost1/prueba";
+        String url_2 = "rmi://localhost2/prueba";
+        String url_3 = "rmi://localhost3/prueba";
+        InterfaceMatriz r1 = (InterfaceMatriz) Naming.lookup(url_1);
+        InterfaceMatriz r2 = (InterfaceMatriz) Naming.lookup(url_2);
+        InterfaceMatriz r3 = (InterfaceMatriz) Naming.lookup(url_3);
 
-        double[][] c1 = r.multiplicarMatrices(a1, b1, n);
-        double[][] c2 = r.multiplicarMatrices(a1, b2, n);
-        double[][] c3 = r.multiplicarMatrices(a1, b3, n);
-        double[][] c4 = r.multiplicarMatrices(a2, b1, n);
-        double[][] c5 = r.multiplicarMatrices(a2, b2, n);
-        double[][] c6 = r.multiplicarMatrices(a2, b3, n);
-        double[][] c7 = r.multiplicarMatrices(a3, b1, n);
-        double[][] c8 = r.multiplicarMatrices(a3, b2, n);
-        double[][] c9 = r.multiplicarMatrices(a3, b3, n);
+        double[][] c1 = r1.multiplicarMatrices(a1, b1, n);
+        double[][] c2 = r1.multiplicarMatrices(a1, b2, n);
+        double[][] c3 = r1.multiplicarMatrices(a1, b3, n);
+        double[][] c4 = r2.multiplicarMatrices(a2, b1, n);
+        double[][] c5 = r2.multiplicarMatrices(a2, b2, n);
+        double[][] c6 = r2.multiplicarMatrices(a2, b3, n);
+        double[][] c7 = r3.multiplicarMatrices(a3, b1, n);
+        double[][] c8 = r3.multiplicarMatrices(a3, b2, n);
+        double[][] c9 = r3.multiplicarMatrices(a3, b3, n);
 
         acomoda_matriz(c, c1, 0, 0);
         acomoda_matriz(c, c2, 0, n / 3);
