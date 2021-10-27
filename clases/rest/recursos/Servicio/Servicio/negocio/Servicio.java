@@ -268,4 +268,33 @@ public class Servicio {
     }
     return Response.ok().build();
   }
+
+  @POST
+  @Path("borra_usuarios")
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response borra2() throws Exception {
+    Connection conexion = pool.getConnection();
+
+    try {
+      PreparedStatement stmt_2 = conexion.prepareStatement("DELETE FROM fotos_usuarios");
+      try {
+        stmt_2.executeUpdate();
+      } finally {
+        stmt_2.close();
+      }
+
+      PreparedStatement stmt_3 = conexion.prepareStatement("DELETE FROM usuarios");
+      try {
+        stmt_3.executeUpdate();
+      } finally {
+        stmt_3.close();
+      }
+    } catch (Exception e) {
+      return Response.status(400).entity(j.toJson(new Error(e.getMessage()))).build();
+    } finally {
+      conexion.close();
+    }
+    return Response.ok().build();
+  }
 }
