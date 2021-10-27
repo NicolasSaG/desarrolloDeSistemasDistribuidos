@@ -27,9 +27,9 @@ public class Matriz {
         double[][] b3 = separa_matriz(b, (2 * n) / 3);
 
         // parte de vms
-        String url_1 = "rmi://localhost1/prueba";
-        String url_2 = "rmi://localhost2/prueba";
-        String url_3 = "rmi://localhost3/prueba";
+        String url_1 = "rmi://10.1.0.5/prueba";
+        String url_2 = "rmi://10.1.0.6/prueba";
+        String url_3 = "rmi://10.1.0.7/prueba";
         InterfaceMatriz r1 = (InterfaceMatriz) Naming.lookup(url_1);
         InterfaceMatriz r2 = (InterfaceMatriz) Naming.lookup(url_2);
         InterfaceMatriz r3 = (InterfaceMatriz) Naming.lookup(url_3);
