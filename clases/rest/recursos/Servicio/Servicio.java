@@ -1,7 +1,7 @@
 /*
   Servicio.java
   Servicio web tipo REST
-  Carlos Pineda Guerrero 2021
+  Carlos Pineda Guerrero, Octubre 2021
 */
 
 package negocio;
@@ -51,6 +51,8 @@ public class Servicio {
   @Produces(MediaType.APPLICATION_JSON)
   public Response alta(@FormParam("usuario") Usuario usuario) throws Exception {
     Connection conexion = pool.getConnection();
+    // connection autocommit fasle y en el finally antes de cerrar conexion,
+    conexion.setAutoCommit(false);
 
     if (usuario.email == null || usuario.email.equals(""))
       return Response.status(400).entity(j.toJson(new Error("Se debe ingresar el email"))).build();
@@ -106,10 +108,14 @@ public class Servicio {
         }
       }
     } catch (Exception e) {
+      conexion.rollback();
       return Response.status(400).entity(j.toJson(new Error(e.getMessage()))).build();
     } finally {
+      // regresar a su estado base
+      conexion.setAutoCommit(true);
       conexion.close();
     }
+    conexion.commit();
     return Response.ok().build();
   }
 
