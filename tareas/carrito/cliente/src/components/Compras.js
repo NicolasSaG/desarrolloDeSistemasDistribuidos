@@ -1,12 +1,14 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Menu from "./Menu";
 
 export default function Compras() {
   const [state, setState] = useState([]);
+  const [search, setSearch] = useState("");
   useEffect(() => {
     axios
-      .get("ruta")
+      .post("/Servicio/rest/ws/articulos")
       .then((response) => {
         setState(response.data);
         console.log(response.data);
@@ -15,8 +17,13 @@ export default function Compras() {
         console.log(error);
       });
   });
+
   return (
     <div>
+      <Menu />
+      <h1>Buscador de artículos</h1>
+      <input type='text' placeholder='buscar...' />
+      <input type='submit' value='Buscar artículos' />
       <h1>Artículos disponibles</h1>
 
       {state.map((item) => (

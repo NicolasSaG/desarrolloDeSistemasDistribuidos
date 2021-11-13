@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import { useRef } from "react";
 import { useState } from "react";
-
+import Menu from "./Menu";
 export default function FormArticulo() {
   const formRef = useRef();
   const [state, setState] = useState(null);
@@ -11,31 +11,36 @@ export default function FormArticulo() {
     event.preventDefault();
     const formdata = new FormData(formRef.current);
 
-    const reader = new FileReader();
-    console.log(file1);
-    console.log(formdata.get("art_imagen"));
-    reader.readAsDataURL(formdata.get("art_imagen"));
-    reader.onload = function (e) {
-      console.log(reader.result);
-    };
+    //creacion de json
     const data = {
-      descripcion: formdata.get,
+      descripcion: formdata.get("art_descripcion"),
+      cantidad: parseInt(formdata.get("art_cantidad")),
+      precio: parseFloat(formdata.get("art_precio")),
     };
 
-    // axios
-    //   .post("ruta", data, {
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //   })
-    //   .then((response) => {
-    //     if (response.data.status === 200) {
-    //       alert("Artículo agregado exitosamente");
-    //     } else {
-    //       alert("No se pudo crear el artículo");
-    //     }
-    //   });
-    //console.log(data.get("art_descripcion"));
+    //base 64 de la imagen
+    const reader = new FileReader();
+    reader.readAsDataURL(formdata.get("art_imagen"));
+
+    reader.onload = function (e) {
+      // console.log(reader.result);
+      data.img = reader.result.split(",")[1];
+      console.log(data);
+      axios
+        .post("/Servicio/rest/ws/alta_articulo", data, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          if (response.data.status === 200) {
+            alert("Artículo agregado exitosamente");
+          }
+        })
+        .catch((error) => {
+          alert("Error al agregar el artículo");
+        });
+    };
   };
 
   const onChange = (event) => {
@@ -44,22 +49,23 @@ export default function FormArticulo() {
 
   return (
     <div>
+      <Menu />
       <h1>Añadir artículo</h1>
       <form method='POST' onSubmit={onSubmit} ref={formRef}>
         <label>
-          Descripción:
+          Descripción del artículo:
           <input type='text' name='art_descripcion' />
         </label>
         <label>
-          Cantidad:
+          Cantidad en almacén:
           <input type='text' name='art_cantidad' />
         </label>
         <label>
-          Precio
+          Precio:
           <input type='text' name='art_precio' />
         </label>
         <label>
-          Imagen:
+          Fotografía del artículo:
           <img
             src={state}
             id='articulo_imagen'
