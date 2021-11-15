@@ -55,7 +55,7 @@ export default function Compras() {
       })
       .catch((error) => {
         alert("hubo un error");
-        console.long(error);
+        console.log(error);
       });
   };
 

@@ -15,6 +15,10 @@ public class Articulo {
         this.imagen = imagen;
     }
 
+    public Articulo() {
+
+    }
+
     // @FormParam necesita un metodo que convierta una String al objeto de tipo
     // Usuario
     public static Articulo valueOf(String s) throws Exception {

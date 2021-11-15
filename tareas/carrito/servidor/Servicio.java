@@ -97,50 +97,45 @@ public class Servicio {
         return Response.ok().build();
     }
 
-    // @POST
-    // @Path("consulta_articulos")
-    // @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    // @Produces(MediaType.APPLICATION_JSON)
-    // public Response consulta(@FormParam("email") String email) throws Exception {
-    // Connection conexion = pool.getConnection();
+    @POST
+    @Path("consulta_articulos")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response consulta(@FormParam("busqueda") String busqueda) throws Exception {
+        Connection conexion = pool.getConnection();
 
-    // try {
-    // PreparedStatement stmt_1 = conexion.prepareStatement(
-    // "SELECT
-    // a.email,a.nombre,a.apellido_paterno,a.apellido_materno,a.fecha_nacimiento,a.telefono,a.genero,b.foto
-    // FROM usuarios a LEFT OUTER JOIN fotos_usuarios b ON a.id_usuario=b.id_usuario
-    // WHERE email=?");
-    // try {
-    // stmt_1.setString(1, email);
+        try {
+            PreparedStatement stmt_1 = conexion.prepareStatement(
+                    "SELECT a.descripcion, a.precio, b.imagen FROM articulos a LEFT OUTER JOIN imagenes_articulo b ON a.id_articulo=b.id_articulo WHERE descripcion LIKE ?");
+            try {
+                stmt_1.setString(1, '%' + busqueda + '%');
+                ResultSet rs = stmt_1.executeQuery();
+                try {
+                    ArrayList<Articulo> articulos = new ArrayList<Articulo>();
+                    while (rs.next()) {
+                        Articulo art = new Articulo();
+                        art.descripcion = rs.getString(1);
+                        art.precio = rs.getFloat(2);
+                        art.imagen = rs.getBytes(3);
+                        articulos.add(art);
+                    }
 
-    // ResultSet rs = stmt_1.executeQuery();
-    // try {
-    // if (rs.next()) {
-    // Usuario r = new Usuario();
-    // r.email = rs.getString(1);
-    // r.nombre = rs.getString(2);
-    // r.apellido_paterno = rs.getString(3);
-    // r.apellido_materno = rs.getString(4);
-    // r.fecha_nacimiento = rs.getString(5);
-    // r.telefono = rs.getString(6);
-    // r.genero = rs.getString(7);
-    // r.foto = rs.getBytes(8);
-    // return Response.ok().entity(j.toJson(r)).build();
-    // }
-    // return Response.status(400).entity(j.toJson(new Error("El email no
-    // existe"))).build();
-    // } finally {
-    // rs.close();
-    // }
-    // } finally {
-    // stmt_1.close();
-    // }
-    // } catch (Exception e) {
-    // return Response.status(400).entity(j.toJson(new
-    // Error(e.getMessage()))).build();
-    // } finally {
-    // conexion.close();
-    // }
-    // }
-
+                    if (articulos.isEmpty()) {
+                        return Response.status(201).entity(j.toJson("No se encontraron articulos con esa descripcion"))
+                                .build();
+                    } else {
+                        return Response.ok().entity(j.toJson(articulos)).build();
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt_1.close();
+            }
+        } catch (Exception e) {
+            return Response.status(400).entity(j.toJson(new Error(e.getMessage()))).build();
+        } finally {
+            conexion.close();
+        }
+    }
 }
