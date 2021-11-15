@@ -1,3 +1,5 @@
+package negocio;
+
 import com.google.gson.*;
 
 public class Articulo {

@@ -1,0 +1,8 @@
+crear vm a partir de imagen
+
+usando root en mysql agregar permisos a hugo para la nueva bd
+entrar como hugo y crear bd.
+
+
+agregar variables de entorno siempre, luego alias del script
+cambiar en Servicio/META-INF/context.xml el nombre de la bd nueva.

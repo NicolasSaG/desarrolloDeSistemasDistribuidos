@@ -12,10 +12,12 @@ export default function FormArticulo() {
     const formdata = new FormData(formRef.current);
 
     //creacion de json
-    const data = {
-      descripcion: formdata.get("art_descripcion"),
-      cantidad: parseInt(formdata.get("art_cantidad")),
-      precio: parseFloat(formdata.get("art_precio")),
+    let data = {
+      articulo: {
+        descripcion: formdata.get("art_descripcion"),
+        cantidad: parseInt(formdata.get("art_cantidad")),
+        precio: parseFloat(formdata.get("art_precio")),
+      },
     };
 
     //base 64 de la imagen
@@ -24,17 +26,41 @@ export default function FormArticulo() {
 
     reader.onload = function (e) {
       // console.log(reader.result);
-      data.img = reader.result.split(",")[1];
+      data.articulo.imagen = reader.result.split(",")[1];
       console.log(data);
+      let body = "";
+      let name;
+      let pairs = [];
+      try {
+        for (name in data) {
+          let value = data[name];
+          if (typeof value !== "string") value = JSON.stringify(value);
+          pairs.push(
+            name +
+              "=" +
+              encodeURI(value)
+                .replace(/=/g, "%3D")
+                .replace(/&/g, "%26")
+                .replace(/%20/g, "+")
+          );
+        }
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+      body = pairs.join("&");
       axios
-        .post("/Servicio/rest/ws/alta_articulo", data, {
+        .post("/Servicio/rest/ws/alta_articulo", body, {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
         })
         .then((response) => {
-          if (response.data.status === 200) {
-            alert("Artículo agregado exitosamente");
+          if (response.status === 200) {
+            alert("Producto agregado exitosamente al carrito");
+            console.log(response);
+          } else {
+            alert(response.data);
+            console.log(response);
           }
         })
         .catch((error) => {
