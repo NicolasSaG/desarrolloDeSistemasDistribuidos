@@ -20,14 +20,18 @@ create table imagenes_articulo(
     id_articulo integer not null
 );
 
--- create table carrito_compra(
---     id_compra integer auto_increment primary key,
---     id_articulo integer not null,
---     cantidad integer not null
--- );
 
 alter table imagenes_articulo add foreign key(id_articulo) references articulos(id_articulo);
 create unique index articulo_1 on articulos(descripcion);
 -- alter table carrito_compra add foreign key(id_articulo) references articulos(id_articulo);
+
+--manejo de articulos en carrito
+create table carrito_compra(
+    id_compra integer auto_increment primary key,
+    id_articulo integer not null,
+    cantidad integer not null
+);
+alter table carrito_compra add foreign key(id_articulo) references articulos(id_articulo);
+
 
 
