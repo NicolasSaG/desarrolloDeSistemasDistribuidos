@@ -4,7 +4,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Nodo {
-    int n = 10;
+    static int n = 10;
     static boolean[] b;
     static long[] m;
 
@@ -90,6 +90,9 @@ public class Nodo {
             puertos[i] = Integer.parseInt(args[i + 1].split(":")[1]);
         }
 
+        m = new long[n];
+        b = new boolean[n];
+
         Servidor s = new Servidor();
         s.start();
 
@@ -104,19 +107,40 @@ public class Nodo {
     }
 
     private static long read(int n) {
-        return -1;
+        return m[n];
     }
 
     private static void write(int n, int value) {
-
+        m[n] = value;
+        b[n] = true;
     }
 
-    private static void lock() {
-
+    public static void Lock() {
+        synchronized (lock) {
+            solicitud_bloqueo = true;
+        }
+        for (int i = 0; i < b.length; i++) {
+            b[i] = false;
+        }
     }
 
-    private static void unlock() {
+    public static void Unlock() throws Exception {
+        // enviar cambios a los otros nodos
+        for (int i = 0; i < num_nodos; i++) {
+            if (nodo != i) {
+                for (int j = 0; j < b.length; j++) {
+                    if (b[i]) {
+                        envia_mensaje(m[j], hosts[j], puertos[j]);
+                    }
+                }
+            }
+        }
 
+        synchronized (lock) {
+            solicitud_bloqueo = false;
+        }
+        // enviar token
+        envia_mensaje(1, "localhost", 50000 + (nodo + 1) % num_nodos);
     }
 
     private static void envia_mensaje(long token, String host, int puerto) throws Exception {
