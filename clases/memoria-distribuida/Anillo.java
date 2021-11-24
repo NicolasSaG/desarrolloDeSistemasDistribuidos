@@ -39,7 +39,7 @@ public class Anillo {
                     m[pos] = cambio;
                 } else {
                     tengo_el_token = true;
-                    System.out.println(token);
+                    // System.out.println(token);
                     if (!bloqueo)
                         envia_token(token);
                 }
@@ -105,6 +105,18 @@ public class Anillo {
         if (nodo == 0) {
             envia_token(1);
         }
+        long r = -1;
+        for (int i = 0; i < 1000; i++) {
+            Lock();
+            r = read(0);
+            System.out.println(r);
+            r++;
+            write(0, r);
+            Unlock();
+        }
+        if (nodo == 0) {
+            System.out.println("fina= " + r);
+        }
         // Thread.sleep(5000);
         // Lock();
         // System.out.println("Adquiri el bloqueo");
@@ -129,6 +141,7 @@ public class Anillo {
             b[i] = false;
         }
 
+        
         bloqueo = true;
 
         while (!tengo_el_token) {

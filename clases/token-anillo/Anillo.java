@@ -24,7 +24,7 @@ class Anillo {
             try {
                 DataInputStream in = new DataInputStream(conexion.getInputStream());
                 token = in.readLong();
-                System.out.println("Token recibido: " + token);
+                // System.out.println("Token recibido: " + token);
                 token += 1;
                 synchronized (lock) {
                     System.out.println("solicitud_bloqueo " + solicitud_bloqueo);
@@ -35,7 +35,7 @@ class Anillo {
                     }
                     if (!bloqueo) {
                         bloqueo = false;
-                        System.out.println("    --" + solicitud_bloqueo);
+                        // System.out.println(" --" + solicitud_bloqueo);
                         envia_mensaje(token, "localhost", 50000 + (nodo + 1) % num_nodos);
 
                     }
@@ -85,7 +85,7 @@ class Anillo {
         adquirirBloqueo();
         while (!bloqueo) {
             System.out.println("adquiriendo bloqueo...");
-            Thread.sleep(100);
+            Thread.sleep(300);
         }
 
         System.out.println("Bloqueo adquirido");
