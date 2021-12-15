@@ -6,7 +6,7 @@
 
 #Compilacion
 echo "Compilando clase Servicio..."
-# export CATALINA_HOME
+# export CATALINA_HOME=
 
 javac -cp $CATALINA_HOME/lib/javax.ws.rs-api-2.0.1.jar:$CATALINA_HOME/lib/gson-2.3.1.jar:. negocio/Servicio.java
 

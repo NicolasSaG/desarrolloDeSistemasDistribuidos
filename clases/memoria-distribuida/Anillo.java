@@ -31,7 +31,7 @@ public class Anillo {
                 DataInputStream in = new DataInputStream(conexion.getInputStream());
                 token = in.readLong();
                 if (token == -1) {
-                    System.out.println("Barrera...");
+                    // System.out.println("Barrera...");
                 } else if (token == -2) {
                     // actualizacion de datos
                     long cambio = in.readLong();
@@ -90,6 +90,9 @@ public class Anillo {
         }
 
         m = new long[n];
+        for (int i = 0; i < m.length; i++) {
+            m[i] = 0;
+        }
         b = new boolean[n];
 
         Servidor s = new Servidor();
@@ -101,21 +104,23 @@ public class Anillo {
                 envia_mensaje(-1, hosts[i], puertos[i]);
             }
         }
-        System.out.println("todos los nodos activados");
+        // System.out.println("todos los nodos activados");
         if (nodo == 0) {
             envia_token(1);
         }
         long r = -1;
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             Lock();
             r = read(0);
-            System.out.println(r);
+            // System.out.println(r);
             r++;
             write(0, r);
             Unlock();
         }
         if (nodo == 0) {
-            System.out.println("fina= " + r);
+            Lock();
+            System.out.println(read(0));
+            Unlock();
         }
         // Thread.sleep(5000);
         // Lock();
@@ -141,8 +146,9 @@ public class Anillo {
             b[i] = false;
         }
 
-        
-        bloqueo = true;
+        synchronized (lock) {
+            bloqueo = true;
+        }
 
         while (!tengo_el_token) {
             Thread.sleep(100);
@@ -163,7 +169,9 @@ public class Anillo {
 
         // enviar token
         envia_token(1);
-        bloqueo = false;
+        synchronized (lock) {
+            bloqueo = false;
+        }
     }
 
     private static void envia_token(long token) throws Exception {
