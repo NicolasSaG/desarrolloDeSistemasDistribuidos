@@ -3,10 +3,11 @@
 #agregar en /usr/bin/
 #chmod +x /usr/bin/archivo.sh
 #alias compilar='/usr/bin/compilar_servicio.sh'
-
+# GRANT ALL PRIVILEGES ON DATABASE.* TO 'hugo'@'%' IDENTIFIED BY "hugo";
 #Compilacion
 echo "Compilando clase Servicio..."
-# export CATALINA_HOME=
+# export CATALINA_HOME=~/apache
+# export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 javac -cp $CATALINA_HOME/lib/javax.ws.rs-api-2.0.1.jar:$CATALINA_HOME/lib/gson-2.3.1.jar:. negocio/Servicio.java
 
